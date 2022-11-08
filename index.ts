@@ -29,7 +29,13 @@ const listenMessage = () => {
   })
 }
 
-client = new Client({ authStrategy: new LocalAuth(), puppeteer: { headless: true } })
+client = new Client({
+  authStrategy: new LocalAuth(),
+  //puppeteer: { headless: true }
+  puppeteer: {
+    args: ['--no-sandbox']
+  }
+})
 
 if (!parentNumber) throw new Error('You must provide a parent number')
 
