@@ -33,10 +33,9 @@ client = new Client({
   authStrategy: new LocalAuth(),
   //puppeteer: { headless: true }
   puppeteer: {
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: ['--no-sandbox']
   }
 })
-
 if (!parentNumber) throw new Error('You must provide a parent number')
 
 console.log('Lets start!')
