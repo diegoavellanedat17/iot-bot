@@ -39,9 +39,9 @@ const dataBaseConnection = async () => {
   client = new Client({
     // authStrategy: new LocalAuth(),
     // //puppeteer: { headless: true }
-    // puppeteer: {
-    //   args: ['--no-sandbox']
-    // }
+    puppeteer: {
+      args: ['--no-sandbox']
+    },
     authStrategy: new RemoteAuth({
       store: store,
       backupSyncIntervalMs: 300000
