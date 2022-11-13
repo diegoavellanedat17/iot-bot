@@ -3,16 +3,20 @@ import dotenv from 'dotenv'
 import qrcode from 'qrcode-terminal'
 import { Client, LocalAuth, RemoteAuth } from 'whatsapp-web.js'
 import { MongoStore } from 'wwebjs-mongo'
+import { messageHandler } from './messagesHandlers/messages'
 import mongoose from 'mongoose'
+import { translateMessage } from './datasources/translator/translator'
+import cron from 'node-cron'
+import { connectDatabase } from './db'
 
 dotenv.config()
 
+const db = connectDatabase()
 const app: Express = express()
 let client: Client
 const port = process.env.PORT
-const MULTI_DEVICE = process.env.MULTI_DEVICE || 'true'
 const parentNumber = process.env.PARENTNUMBER
-const databaseURL = process.env.MONGO_DB || 'unknowdn'
+const databaseURL = process.env.MONGODB_URI || 'unknowdn'
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Express + TypeScript Server')
@@ -27,13 +31,19 @@ const listenMessage = () => {
     const { body, id, from } = msg
     const { fromMe } = id
     if (!fromMe) console.log('Incomming message', body)
-    if (parentNumber) client.sendMessage(parentNumber, `Message from ${from}: ${body}`)
+    if (parentNumber) {
+      client.sendMessage(parentNumber, `Message from ${from}: ${body}`)
+      // const translatedMessage = await translateMessage(body)
+      // client.sendMessage(parentNumber, translatedMessage!)
+      // const messageReponse = await messageHandler(body)
+      // client.sendMessage(parentNumber, messageReponse)
+    }
+
     return
   })
 }
 const dataBaseConnection = async () => {
   const UserSchema = new mongoose.Schema({ name: { type: String } })
-  await mongoose.connect(databaseURL)
   const store = new MongoStore({ mongoose: mongoose })
 
   client = new Client({
@@ -57,6 +67,11 @@ const dataBaseConnection = async () => {
   client.on('ready', () => {
     console.log('The client is ready')
     listenMessage()
+    cron.schedule('* */6 * * *', function () {
+      console.log('---------------------')
+      console.log('running a ttask cada minuto')
+      client.sendMessage(parentNumber, `Is still working`)
+    })
   })
 
   client.on('remote_session_saved', () => {
@@ -75,4 +90,6 @@ const dataBaseConnection = async () => {
 
   client.initialize()
 }
+console.log('starting code ')
+
 dataBaseConnection()
