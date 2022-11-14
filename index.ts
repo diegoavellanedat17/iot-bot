@@ -44,8 +44,8 @@ const listenMessage = () => {
 }
 const dataBaseConnection = async () => {
   const UserSchema = new mongoose.Schema({ name: { type: String } })
+  await mongoose.connect(databaseURL)
   const store = new MongoStore({ mongoose: mongoose })
-
   client = new Client({
     // authStrategy: new LocalAuth(),
     // //puppeteer: { headless: true }
