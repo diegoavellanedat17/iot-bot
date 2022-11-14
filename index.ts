@@ -43,7 +43,6 @@ const listenMessage = () => {
   })
 }
 const dataBaseConnection = async () => {
-  const UserSchema = new mongoose.Schema({ name: { type: String } })
   await mongoose.connect(databaseURL)
   const store = new MongoStore({ mongoose: mongoose })
   client = new Client({
@@ -67,7 +66,7 @@ const dataBaseConnection = async () => {
   client.on('ready', () => {
     console.log('The client is ready')
     listenMessage()
-    cron.schedule('* */6 * * *', function () {
+    cron.schedule('0 */6 * * *', function () {
       console.log('---------------------')
       console.log('running a ttask cada minuto')
       client.sendMessage(parentNumber, `Is still working`)
