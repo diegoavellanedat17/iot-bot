@@ -5,6 +5,7 @@ export const translateMessage = async (message: string): Promise<string | null> 
   encodedParams.append('q', message)
   encodedParams.append('target', 'es')
   encodedParams.append('source', 'en')
+  const transladorAPI = process.env.TRANSLATOR_API
 
   const options = {
     method: 'POST',
@@ -12,7 +13,7 @@ export const translateMessage = async (message: string): Promise<string | null> 
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
       'Accept-Encoding': 'application/gzip',
-      'X-RapidAPI-Key': '154db6a8bamshf1981f24622044fp130b24jsnd9fa24771d44',
+      'X-RapidAPI-Key': transladorAPI,
       'X-RapidAPI-Host': 'google-translate1.p.rapidapi.com'
     },
     data: encodedParams
