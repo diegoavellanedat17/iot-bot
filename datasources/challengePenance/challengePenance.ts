@@ -48,9 +48,7 @@ export class ChallengeGame {
   createSession = async (payload: createNewSessionParameters) => {
     const { principalChat, penances, challenges, toPrincipal, participants } = payload
     const state = await this.dbConnection.connection.readyState
-    console.log('Calling create sesion')
     const sessionName = uniqueNamesGenerator(customConfigGenerator)
-    console.log('la sesion creada es: ', sessionName)
     const doc = this.challengeModel({
       id: sessionName,
       isActive: true,
@@ -74,16 +72,22 @@ export class ChallengeGame {
     await this.challengeModel.updateOne({ id }, { isActive: true })
   }
   addParticipant = async ({ id, participant, chatId }: AddParticipantParameters) => {
-    const result = await this.challengeModel.findOne({ id })
-    const participants = result.participants
-    participants.push({ name: participant, isActive: true, chatId })
-    await this.challengeModel.updateOne(
-      {
-        id
-      },
-      { participants }
-    )
-    console.log(result)
+    try {
+      const result = await this.challengeModel.findOne({ id })
+      const participants = result.participants
+      // TODO verificar si el numero ya existe para no tener a nadie repetido
+      participants.push({ name: participant, isActive: true, chatId })
+      await this.challengeModel.updateOne(
+        {
+          id
+        },
+        { participants }
+      )
+      return true
+    } catch (error) {
+      console.log('Error', error)
+      return false
+    }
   }
   addChallenges = async ({ id, challenges }: { id: string; challenges: string[] }) => {
     const result = await this.challengeModel.findOne({ id })

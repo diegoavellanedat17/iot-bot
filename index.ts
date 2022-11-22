@@ -35,7 +35,13 @@ const listenMessage = (connection: typeof mongoose) => {
       // const translatedMessage = await translateMessage(body)
       // client.sendMessage(parentNumber, translatedMessage!)
       const messageReponse = await messageHandler(body, connection, from)
-      client.sendMessage(parentNumber, messageReponse)
+      if (Array.isArray(messageReponse)) {
+        messageReponse.map((message) => {
+          client.sendMessage(from, message)
+        })
+        return
+      }
+      client.sendMessage(from, messageReponse)
     }
 
     return
