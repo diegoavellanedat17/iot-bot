@@ -5,6 +5,7 @@ import { Client, RemoteAuth } from 'whatsapp-web.js'
 import { MongoStore } from 'wwebjs-mongo'
 import { messageHandler } from './messagesHandlers/messages'
 import mongoose from 'mongoose'
+import { ChallengeGame, defaultsSessions } from './datasources/challengePenance/challengePenance'
 import cron from 'node-cron'
 import { initDb } from './db'
 
@@ -34,14 +35,21 @@ const listenMessage = (connection: typeof mongoose) => {
       client.sendMessage(parentNumber, `Message from ${from}: ${body}`)
       // const translatedMessage = await translateMessage(body)
       // client.sendMessage(parentNumber, translatedMessage!)
-      const messageReponse = await messageHandler(body, connection, from)
-      if (Array.isArray(messageReponse)) {
-        messageReponse.map((message) => {
+      const messageResponse = await messageHandler(body, connection, from)
+      if (Array.isArray(messageResponse)) {
+        messageResponse.map((message) => {
           client.sendMessage(from, message)
         })
         return
       }
-      client.sendMessage(from, messageReponse)
+      if (typeof messageResponse === 'object' && messageResponse.sendToParticipant) {
+        await client.sendMessage(from, messageResponse.text)
+        await client.sendMessage(messageResponse.chatId, messageResponse.text)
+      }
+      if (typeof messageResponse === 'object' && !messageResponse.sendToParticipant) {
+        await client.sendMessage(from, messageResponse.text)
+      }
+      await client.sendMessage(from, messageResponse)
     }
 
     return
@@ -51,23 +59,25 @@ const listenMessage = (connection: typeof mongoose) => {
 const dataBaseConnection = async () => {
   const connection = await initDb()
   // Create an object with all the necessary defaults
-
+  const challenge = new ChallengeGame(connection)
   // await challenge.createSession({
   //   ...defaultsSessions,
   //   principalChat: '1234'
   // })
   //await challenge.getSessionById('session-002')
-  // await challenge.addParticipant({
+  // const agregado = await challenge.addParticipant({
   //   id: 'additional-blush-takin',
   //   participant: 'juancho',
   //   chatId: 'mockChatId'
   // })
+  // console.log('fue agreagado? ', agregado)
   // await challenge.addChallenges({
-  //   id: 'additional-blush-takin',
+  //   chatId: 'mockChatId',
   //   challenges: ['toca', 'mirame', 'levanta', 'besar', 'saltar', 'romper', 'encontrar', 'terminar']
   // })
   // await challenge.updateSessionById('session-002')
   // await challenge.pickChallenges('additional-blush-takin')
+  // await challenge.closeGames()
   if (!testing) {
     const UserSchema = new mongoose.Schema({ name: { type: String } })
     const store = new MongoStore({ mongoose: mongoose })
