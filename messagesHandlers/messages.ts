@@ -1,14 +1,36 @@
 import { ChallengeGame, defaultsSessions } from '../datasources/challengePenance/challengePenance'
-import { correlationFunction, getWordAfter } from './utils'
+import { correlationFunction, getWordAfter, isGroup, getNumber } from './utils'
 
 import mongoose from 'mongoose'
 
 export const messageHandler = async (
   messageRaw: string,
   connection: typeof mongoose,
-  principalChat: string
+  principalChat: string,
+  author?: string,
+  mentions?: any,
+  to?: string
 ): Promise<any> => {
   const message = messageRaw.toLowerCase()
+
+  if (isGroup(principalChat)) {
+    console.log('las menciones son', mentions)
+    console.log('el yo soooy', to)
+    if (to && mentions.length) {
+      let mentionMe = false
+      const toNumber = getNumber(to)
+      mentions.map((mention: any) => {
+        if (mention.number === toNumber) {
+          mentionMe = true
+        }
+      })
+      if (mentionMe) return 'gracias por la mencion'
+      return 'estamos en grupo pero no me mencionas'
+    }
+
+    return 'si es un grupo'
+  }
+
   if (correlationFunction(message, ['soy', 'hola', 'juego'])) {
     const participant = getWordAfter(message, 'soy')
     const id = message.split(' ').pop()

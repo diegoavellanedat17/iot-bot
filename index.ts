@@ -1,7 +1,7 @@
 import express, { Express, Request, Response } from 'express'
 import dotenv from 'dotenv'
 import qrcode from 'qrcode-terminal'
-import { Client, RemoteAuth } from 'whatsapp-web.js'
+import { Client, RemoteAuth, Message } from 'whatsapp-web.js'
 import { MongoStore } from 'wwebjs-mongo'
 import { messageHandler } from './messagesHandlers/messages'
 import mongoose from 'mongoose'
@@ -28,14 +28,16 @@ app.listen(port, () => {
 
 const listenMessage = (connection: typeof mongoose) => {
   client.on('message', async (msg) => {
-    const { body, id, from } = msg
+    const { body, id, from, author, to } = msg
+    const mentions = await msg.getMentions()
     const { fromMe } = id
+    console.log('reciviboooooo', msg)
     if (!fromMe) console.log('Incomming message', body)
     if (parentNumber) {
       client.sendMessage(parentNumber, `Message from ${from}: ${body}`)
       // const translatedMessage = await translateMessage(body)
       // client.sendMessage(parentNumber, translatedMessage!)
-      const messageResponse = await messageHandler(body, connection, from)
+      const messageResponse = await messageHandler(body, connection, from, author, mentions, to)
       if (Array.isArray(messageResponse)) {
         messageResponse.map((message) => {
           client.sendMessage(from, message)

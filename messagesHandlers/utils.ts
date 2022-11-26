@@ -16,3 +16,15 @@ export const getWordAfter = (message: string, keyword: string) => {
   const beforeNameIndex = words.findIndex((key) => key === keyword)
   return words[beforeNameIndex + 1]
 }
+
+export const isGroup = (chatId: string): Boolean => {
+  return chatId.includes('g')
+}
+
+export const getNumber = (chatId: string): string | null => {
+  const numberPattern = /\d+/g
+
+  const numberArray = chatId.match(numberPattern)
+  if (numberArray) return numberArray[0]
+  return null
+}
